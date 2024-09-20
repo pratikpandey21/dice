@@ -77,13 +77,13 @@ func EvictAllkeysLRU(store *Store) {
 }
 
 // TODO: implement LFU
-func (store *Store) evict() {
+func (s *Store) evict() {
 	switch config.EvictionStrategy {
 	case "simple-first":
-		evictFirst(store)
+		evictFirst(s)
 	case "allkeys-random":
-		evictAllkeysRandom(store)
+		evictAllkeysRandom(s)
 	case "allkeys-lru":
-		EvictAllkeysLRU(store)
+		EvictAllkeysLRU(s)
 	}
 }

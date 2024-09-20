@@ -55,6 +55,10 @@ func NewErrWithMessage(errMsg string) []byte {
 	return newDiceErr(errMsg).toEncodedMessage()
 }
 
+func NewErrorWithMessage(errMsg string) error {
+	return errors.New(errMsg)
+}
+
 func NewErrWithFormattedMessage(errMsgFmt string, args ...interface{}) []byte {
 	if len(args) > 0 {
 		errMsgFmt = fmt.Sprintf(errMsgFmt, args...)

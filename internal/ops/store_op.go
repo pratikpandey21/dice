@@ -20,3 +20,15 @@ type StoreResponse struct {
 	RequestID int32  // RequestID that this StoreResponse belongs to
 	Result    []byte // Result of the Store operation, for now the type is set to []byte, but this can change in the future.
 }
+
+type Operation struct {
+	Cmd  string
+	Args []string
+}
+
+type Request struct {
+	RequestID    string       // The request ID
+	OperationSet []*Operation // Put of commands to be executed atomically
+	ShardID      int          // The ID of the shard on which the store commands will be executed
+	WorkerID     string       // The ID of the worker that sent this store operation
+}

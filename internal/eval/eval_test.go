@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/bytedance/sonic"
+	ds "github.com/dicedb/dice/internal/datastructures"
 	"strconv"
 	"strings"
 	"testing"
@@ -25,15 +26,15 @@ type evalTestCase struct {
 	validator func(output []byte)
 }
 
-func setupTest(store *dstore.Store) *dstore.Store {
+func setupTest[T ds.DSInterface](store *dstore.Store[T]) *dstore.Store[T] {
 	dstore.ResetStore(store)
 	dstore.KeyspaceStat[0] = make(map[string]int)
 
 	return store
 }
 
-func TestEval(t *testing.T) {
-	store := dstore.NewStore(nil)
+func TestEval[T ds.DSInterface](t *testing.T) {
+	store := dstore.NewStore[T](nil)
 
 	testEvalMSET(t, store)
 	testEvalPING(t, store)
@@ -63,7 +64,7 @@ func TestEval(t *testing.T) {
 	testEvalJSONSTRLEN(t, store)
 }
 
-func testEvalPING(t *testing.T, store *dstore.Store) {
+func testEvalPING[T ds.DSInterface](t *testing.T, store *dstore.Store[T]) {
 	tests := map[string]evalTestCase{
 		"nil value":            {input: nil, output: []byte("+PONG\r\n")},
 		"empty args":           {input: []string{}, output: []byte("+PONG\r\n")},
@@ -74,7 +75,7 @@ func testEvalPING(t *testing.T, store *dstore.Store) {
 	runEvalTests(t, tests, evalPING, store)
 }
 
-func testEvalHELLO(t *testing.T, store *dstore.Store) {
+func testEvalHELLO[T ds.DSInterface](t *testing.T, store *dstore.Store) {
 	resp := []interface{}{
 		"proto", 2,
 		"id", serverID,
@@ -93,7 +94,7 @@ func testEvalHELLO(t *testing.T, store *dstore.Store) {
 	runEvalTests(t, tests, evalHELLO, store)
 }
 
-func testEvalSET(t *testing.T, store *dstore.Store) {
+func testEvalSET[T ds.DSInterface](t *testing.T, store *dstore.Store) {
 	tests := map[string]evalTestCase{
 		"nil value":                       {input: nil, output: []byte("-ERR wrong number of arguments for 'set' command\r\n")},
 		"empty array":                     {input: []string{}, output: []byte("-ERR wrong number of arguments for 'set' command\r\n")},
@@ -117,7 +118,7 @@ func testEvalSET(t *testing.T, store *dstore.Store) {
 	runEvalTests(t, tests, evalSET, store)
 }
 
-func testEvalMSET(t *testing.T, store *dstore.Store) {
+func testEvalMSET[T ds.DSInterface](t *testing.T, store *dstore.Store[T]) {
 	tests := map[string]evalTestCase{
 		"nil value":         {input: nil, output: []byte("-ERR wrong number of arguments for 'mset' command\r\n")},
 		"empty array":       {input: []string{}, output: []byte("-ERR wrong number of arguments for 'mset' command\r\n")},
@@ -130,7 +131,7 @@ func testEvalMSET(t *testing.T, store *dstore.Store) {
 	runEvalTests(t, tests, evalMSET, store)
 }
 
-func testEvalGET(t *testing.T, store *dstore.Store) {
+func testEvalGET[T ds.DSInterface](t *testing.T, store *dstore.Store) {
 	tests := map[string]evalTestCase{
 		"nil value": {
 			setup:  func() {},
@@ -1321,7 +1322,7 @@ func testEvalJSONSTRLEN(t *testing.T, store *dstore.Store) {
 	}
 	runEvalTests(t, tests, evalJSONSTRLEN, store)
 }
-func runEvalTests(t *testing.T, tests map[string]evalTestCase, evalFunc func([]string, *dstore.Store) []byte, store *dstore.Store) {
+func runEvalTests[T ds.DSInterface](t *testing.T, tests map[string]evalTestCase, evalFunc func([]string, *dstore.Store[T]) []byte, store *dstore.Store[T]) {
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
 			store = setupTest(store)
